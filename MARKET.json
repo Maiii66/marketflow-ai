@@ -1,0 +1,359 @@
+{
+  "name": "MARKET",
+  "type": "SHARED",
+  "summary": "",
+  "description": "",
+  "tags": [],
+  "blogUrl": "",
+  "metadata": {
+    "externalId": "Y8RJNcEtRJOfzs89BWLSh"
+  },
+  "author": "arasu vicky",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-google-sheets",
+    "@activepieces/piece-delay",
+    "@activepieces/piece-ai"
+  ],
+  "flows": [
+    {
+      "displayName": "MARKET",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "New Row Added",
+        "nextAction": {
+          "name": "step_2",
+          "skip": false,
+          "type": "PIECE",
+          "valid": true,
+          "settings": {
+            "input": {
+              "unit": "seconds",
+              "delayFor": "60\n"
+            },
+            "pieceName": "@activepieces/piece-delay",
+            "actionName": "delayFor",
+            "sampleData": {},
+            "pieceVersion": "0.3.32",
+            "propertySettings": {
+              "unit": {
+                "type": "MANUAL"
+              },
+              "delayFor": {
+                "type": "MANUAL"
+              },
+              "markdown": {
+                "type": "MANUAL"
+              }
+            },
+            "errorHandlingOptions": {
+              "retryOnFailure": {
+                "value": false
+              },
+              "continueOnFailure": {
+                "value": false
+              }
+            }
+          },
+          "nextAction": {
+            "name": "step_3",
+            "skip": false,
+            "type": "PIECE",
+            "valid": true,
+            "settings": {
+              "input": {
+                "auth": "{{connections['YOUR_GOOGLE_SHEETS_CONNECTION']}}",
+                "sheetId": 0,
+                "headerRow": "1",
+                "rowNumber": "{{trigger['output']['row']}}",
+                "spreadsheetId": "YOUR_SPREADSHEET_ID",
+                "useHeaderNames": true,
+                "includeTeamDrives": false
+              },
+              "pieceName": "@activepieces/piece-google-sheets",
+              "actionName": "find_row_by_num",
+              "sampleData": {},
+              "pieceVersion": "0.16.4",
+              "propertySettings": {
+                "sheetId": {
+                  "type": "MANUAL"
+                },
+                "headerRow": {
+                  "type": "MANUAL"
+                },
+                "rowNumber": {
+                  "type": "MANUAL"
+                },
+                "spreadsheetId": {
+                  "type": "MANUAL"
+                },
+                "useHeaderNames": {
+                  "type": "MANUAL"
+                },
+                "includeTeamDrives": {
+                  "type": "MANUAL"
+                }
+              },
+              "errorHandlingOptions": {
+                "retryOnFailure": {
+                  "value": false
+                },
+                "continueOnFailure": {
+                  "value": false
+                }
+              }
+            },
+            "nextAction": {
+              "name": "step_4",
+              "skip": false,
+              "type": "CODE",
+              "valid": true,
+              "settings": {
+                "input": {
+                  "details": "{{step_3['output']['values']['Details']}}",
+                  "productName": "{{step_3['output']['values']['Product Name']}}"
+                },
+                "sampleData": {},
+                "sourceCode": {
+                  "code": "export const code = async (inputs) => {\n  const productName = inputs.productName;\n  const details = inputs.details;\n\n  const prompt = `You are an expert e-commerce copywriter. Write 3 platform-specific listing drafts for this product — never generic or robotic, each platform written fresh (not reworded copies).\n\nPRODUCT: ${productName}\nDETAILS: ${details}\n\nRULES: Use only the facts given above, never invent specs. No real brand names. No filler phrases like \"perfect for any occasion.\" If details are thin, write from the name alone and add a \"Note:\" line on what's missing.\n\nFormat exactly as:\n\n## ETSY TITLE\n(under 140 chars, warm/story tone)\n## ETSY TAGS\n(13 tags, comma-separated, lowercase)\n## ETSY DESCRIPTION\n(2-3 short paragraphs, personal tone, soft CTA)\n## AMAZON TITLE\n(keyword-first, factual)\n## AMAZON BULLETS\n(5 bullets, each starts with a CAPS benefit)\n## AMAZON BACKEND TERMS\n(comma-separated keywords, no title repeats)\n## SHOPIFY META TITLE\n(under 60 chars)\n## SHOPIFY META DESCRIPTION\n(under 160 chars, benefit + CTA)\n## SHOPIFY DESCRIPTION\n(3-4 paragraphs, brand storytelling, subheadings ok)`;\n\n  return { prompt };\n};",
+                  "packageJson": "{}"
+                },
+                "errorHandlingOptions": {
+                  "retryOnFailure": {
+                    "value": false
+                  },
+                  "continueOnFailure": {
+                    "value": false
+                  }
+                }
+              },
+              "nextAction": {
+                "name": "step_1",
+                "skip": false,
+                "type": "PIECE",
+                "valid": true,
+                "settings": {
+                  "input": {
+                    "model": "anthropic/claude-sonnet-5",
+                    "prompt": "{{step_4['output']}}",
+                    "provider": "activepieces",
+                    "webSearch": false,
+                    "creativity": "50",
+                    "maxOutputTokens": "1500",
+                    "webSearchOptions": {}
+                  },
+                  "pieceName": "@activepieces/piece-ai",
+                  "actionName": "askAi",
+                  "sampleData": {},
+                  "pieceVersion": "0.4.9",
+                  "propertySettings": {
+                    "model": {
+                      "type": "MANUAL"
+                    },
+                    "prompt": {
+                      "type": "MANUAL"
+                    },
+                    "provider": {
+                      "type": "MANUAL"
+                    },
+                    "webSearch": {
+                      "type": "MANUAL"
+                    },
+                    "creativity": {
+                      "type": "MANUAL"
+                    },
+                    "conversationKey": {
+                      "type": "MANUAL"
+                    },
+                    "maxOutputTokens": {
+                      "type": "MANUAL"
+                    },
+                    "webSearchOptions": {
+                      "type": "MANUAL",
+                      "schema": {}
+                    }
+                  },
+                  "errorHandlingOptions": {
+                    "retryOnFailure": {
+                      "value": false
+                    },
+                    "continueOnFailure": {
+                      "value": false
+                    }
+                  }
+                },
+                "nextAction": {
+                  "name": "step_5",
+                  "skip": false,
+                  "type": "CODE",
+                  "valid": true,
+                  "settings": {
+                    "input": {
+                      "aiOutput": "{{step_1['output']}}"
+                    },
+                    "sampleData": {},
+                    "sourceCode": {
+                      "code": "export const code = async (inputs) => {\n  const text = inputs.aiOutput;\n\n  function extract(section, nextSections) {\n    const startTag = `## ${section}`;\n    const startIdx = text.indexOf(startTag);\n    if (startIdx === -1) return '';\n    const afterStart = startIdx + startTag.length;\n    \n    let endIdx = text.length;\n    for (const next of nextSections) {\n      const idx = text.indexOf(`## ${next}`, afterStart);\n      if (idx !== -1 && idx < endIdx) endIdx = idx;\n    }\n    return text.substring(afterStart, endIdx).trim();\n  }\n\n  const etsyTitle = extract('ETSY TITLE', ['ETSY TAGS']);\n  const etsyTags = extract('ETSY TAGS', ['ETSY DESCRIPTION']);\n  const etsyDescription = extract('ETSY DESCRIPTION', ['AMAZON TITLE']);\n  const amazonTitle = extract('AMAZON TITLE', ['AMAZON BULLETS']);\n  const amazonBullets = extract('AMAZON BULLETS', ['AMAZON BACKEND TERMS']);\n  const amazonBackendTerms = extract('AMAZON BACKEND TERMS', ['SHOPIFY META TITLE']);\n  const shopifyMetaTitle = extract('SHOPIFY META TITLE', ['SHOPIFY META DESCRIPTION']);\n  const shopifyMetaDescription = extract('SHOPIFY META DESCRIPTION', ['SHOPIFY DESCRIPTION']);\n  const shopifyDescription = extract('SHOPIFY DESCRIPTION', []);\n\n  const etsyDraft = `TITLE: ${etsyTitle}\\n\\nTAGS: ${etsyTags}\\n\\nDESCRIPTION:\\n${etsyDescription}`;\n  const amazonDraft = `TITLE: ${amazonTitle}\\n\\nBULLETS:\\n${amazonBullets}\\n\\nBACKEND TERMS: ${amazonBackendTerms}`;\n  const shopifyDraft = `META TITLE: ${shopifyMetaTitle}\\n\\nMETA DESCRIPTION: ${shopifyMetaDescription}\\n\\nDESCRIPTION:\\n${shopifyDescription}`;\n\n  return { etsyDraft, amazonDraft, shopifyDraft };\n};",
+                      "packageJson": "{}"
+                    },
+                    "errorHandlingOptions": {
+                      "retryOnFailure": {
+                        "value": false
+                      },
+                      "continueOnFailure": {
+                        "value": false
+                      }
+                    }
+                  },
+                  "nextAction": {
+                    "name": "step_6",
+                    "skip": false,
+                    "type": "PIECE",
+                    "valid": true,
+                    "settings": {
+                      "input": {
+                        "auth": "{{connections['YOUR_GOOGLE_SHEETS_CONNECTION']}}",
+                        "row_id": "{{step_3['output']['row']}}",
+                        "values": {
+                          "D": "{{step_5['output']['etsyDraft']}}",
+                          "E": "{{step_5['output']['amazonDraft']}}",
+                          "F": "{{step_5['output']['shopifyDraft']}}",
+                          "G": "Ready"
+                        },
+                        "sheetId": 0,
+                        "spreadsheetId": "YOUR_SPREADSHEET_ID",
+                        "first_row_headers": true,
+                        "includeTeamDrives": false
+                      },
+                      "pieceName": "@activepieces/piece-google-sheets",
+                      "actionName": "update_row",
+                      "sampleData": {},
+                      "pieceVersion": "0.16.4",
+                      "propertySettings": {
+                        "row_id": {
+                          "type": "MANUAL"
+                        },
+                        "values": {
+                          "type": "MANUAL",
+                          "schema": {
+                            "A": {
+                              "type": "SHORT_TEXT",
+                              "required": false,
+                              "displayName": "Product Name",
+                              "defaultValue": ""
+                            },
+                            "B": {
+                              "type": "SHORT_TEXT",
+                              "required": false,
+                              "displayName": "Details",
+                              "defaultValue": ""
+                            },
+                            "C": {
+                              "type": "SHORT_TEXT",
+                              "required": false,
+                              "displayName": "Photo URL",
+                              "defaultValue": ""
+                            },
+                            "D": {
+                              "type": "SHORT_TEXT",
+                              "required": false,
+                              "displayName": "Etsy Draft",
+                              "defaultValue": ""
+                            },
+                            "E": {
+                              "type": "SHORT_TEXT",
+                              "required": false,
+                              "displayName": "Amazon Draft",
+                              "defaultValue": ""
+                            },
+                            "F": {
+                              "type": "SHORT_TEXT",
+                              "required": false,
+                              "displayName": "Shopify Draft",
+                              "defaultValue": ""
+                            },
+                            "G": {
+                              "type": "SHORT_TEXT",
+                              "required": false,
+                              "displayName": "Status",
+                              "defaultValue": ""
+                            }
+                          }
+                        },
+                        "sheetId": {
+                          "type": "MANUAL"
+                        },
+                        "spreadsheetId": {
+                          "type": "MANUAL"
+                        },
+                        "first_row_headers": {
+                          "type": "MANUAL"
+                        },
+                        "includeTeamDrives": {
+                          "type": "MANUAL"
+                        }
+                      },
+                      "errorHandlingOptions": {
+                        "retryOnFailure": {
+                          "value": true
+                        },
+                        "continueOnFailure": {
+                          "value": false
+                        }
+                      }
+                    },
+                    "displayName": "Update Row",
+                    "lastUpdatedDate": "2026-08-01T19:40:37.615Z"
+                  },
+                  "displayName": "Code",
+                  "lastUpdatedDate": "2026-08-01T19:40:37.615Z"
+                },
+                "displayName": "Ask AI",
+                "lastUpdatedDate": "2026-08-01T19:40:37.614Z"
+              },
+              "displayName": "Code",
+              "lastUpdatedDate": "2026-08-01T19:40:37.614Z"
+            },
+            "displayName": "Get Single Row by ID",
+            "lastUpdatedDate": "2026-08-01T19:40:37.614Z"
+          },
+          "displayName": "Delay For",
+          "lastUpdatedDate": "2026-08-01T19:40:37.614Z"
+        },
+        "lastUpdatedDate": "2026-08-01T19:40:37.613Z",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "sampleData": {},
+          "propertySettings": {
+            "info": {
+              "type": "MANUAL"
+            },
+            "sheetId": {
+              "type": "MANUAL"
+            },
+            "spreadsheetId": {
+              "type": "MANUAL"
+            },
+            "includeTeamDrives": {
+              "type": "MANUAL"
+            }
+          },
+          "pieceName": "@activepieces/piece-google-sheets",
+          "pieceVersion": "0.16.4",
+          "triggerName": "googlesheets_new_row_added",
+          "input": {
+            "auth": "{{connections['YOUR_GOOGLE_SHEETS_CONNECTION']}}",
+            "sheetId": 0,
+            "spreadsheetId": "YOUR_SPREADSHEET_ID",
+            "includeTeamDrives": false
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "22",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}
