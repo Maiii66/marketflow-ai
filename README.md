@@ -1,86 +1,206 @@
-# Data Watchdog
+# MARKET - Marketplace Listing Automation
 
-A lightweight data observability tool that monitors datasets for quality issues — row count anomalies, schema changes, null spikes, and stale data — and alerts when something looks wrong.
+An **ActivePieces workflow** that automates product listing generation and management across multiple e-commerce platforms.
 
-Started as a small script to learn how tools like Monte Carlo / Bigeye work under the hood. Being actively rebuilt into a real, deployable tool: live dashboard, configurable checks, Slack alerts, and real lineage tracking.
+## 📋 Overview
 
-## Why
+MARKET is an intelligent automation workflow that:
+- **Monitors** a Google Sheet for new product entries
+- **Validates** product information (name, details, images)
+- **Cleans & Normalizes** data (formatting, capitalization, punctuation)
+- **Extracts Keywords** automatically from product details
+- **Generates Listings** optimized for Etsy, Amazon, and Shopify
+- **Updates** the Google Sheet with generated listings
 
-Data pipelines break silently all the time — a column gets dropped, a source goes stale, a job returns 40 rows instead of 20,000 — and nobody finds out until a dashboard downstream looks wrong. This project detects that automatically and tells you before your stakeholders do.
+## 🎯 Features
 
-## Features
+✅ **Automatic Validation**
+- Checks for required fields (Product Name, Details)
+- Ensures minimum content length (3+ chars for name, 15+ for details)
+- Validates before processing
 
-- **Volume anomaly detection** — flags row counts that deviate significantly from historical norms
-- **Schema change detection** — flags added/removed columns between runs
-- **Null spike detection** — flags columns with abnormally high null rates
-- **Freshness checks** — flags data that hasn't been updated recently
-- **Snapshot history** — every run is stored so trends can be tracked over time
-- **Lineage awareness** — shows which downstream systems are affected when a source breaks
-- **Live dashboard** — visualizes health status, alert history, and trends
+✅ **Smart Data Processing**
+- Removes extra spaces, tabs, newlines
+- Normalizes punctuation and spacing
+- Title case formatting for product names
+- Extracts meaningful keywords (removes stop words)
 
-> Status: actively in development. See [Roadmap](#roadmap) below for what's built vs. planned.
+✅ **Multi-Platform Support**
+- Generates listing drafts for Etsy
+- Generates listing drafts for Amazon
+- Generates listing drafts for Shopify
+- Stores results back in Google Sheet
 
-## Setup
+✅ **Error Handling**
+- Input validation with detailed error messages
+- Conditional routing for valid/invalid entries
+- Retry logic for sheet operations
 
-```bash
-git clone https://github.com/YOUR_USERNAME/data-watchdog.git
-cd data-watchdog
-python -m venv venv
-source venv/bin/activate   # on Windows: venv\Scripts\activate
-pip install -r requirements.txt
+## 🏗️ Architecture
+
+### Workflow Stages
+
+1. **Trigger**: `New Row Added` (Google Sheets)
+2. **Get Row Data**: Fetch the new row with headers
+3. **Validate Input**: Check required fields and content length
+4. **Router**: Branch based on validation results
+   - ✅ **Valid Path**:
+     - Clean & Normalize text
+     - Extract keywords
+     - Build AI prompts
+     - Generate marketplace listings
+     - Format output
+     - Update Google Sheet
+   - ❌ **Invalid Path**: Store error message
+
+### Key Components
+
+- **Google Sheets Integration**: Trigger + read/write operations
+- **Custom Code Blocks**: 5 validation and processing steps
+- **AI Integration**: Uses ActivePieces AI piece for listing generation
+- **Data Formatting**: Output normalization and JSON validation
+
+## 📊 Data Flow
+
+```
+Google Sheet (New Row)
+    ↓
+Validate Input (Product Name, Details)
+    ↓
+    ├─ Valid ────→ Clean & Normalize
+    │              ↓
+    │         Extract Keywords
+    │              ↓
+    │         Build AI Prompt
+    │              ↓
+    │         Generate Listings
+    │              ↓
+    │         Format Output
+    │              ↓
+    │         Update Google Sheet ✅
+    │
+    └─ Invalid ──→ Log Error Message ❌
 ```
 
-## Usage
+## 🔧 Setup Instructions
 
-Generate sample data:
-```bash
-python generate_data.py
+### Prerequisites
+- **Google Account** with Google Sheets access
+- **ActivePieces Account** (self-hosted or cloud)
+- **AI Service** credentials (for listing generation)
+
+### Installation
+
+1. **Import Workflow**
+   - Go to ActivePieces
+   - Create new flow or import from JSON
+   - Upload `MARKET__7_.json`
+
+2. **Configure Google Sheets**
+   - Set up a Google Sheet with columns:
+     - A: Product Name
+     - B: Details
+     - C: Photo URL
+     - D: Etsy Draft
+     - E: Amazon Draft
+     - F: Shopify Draft
+     - G: Status
+
+3. **Connect Credentials**
+   - Authenticate Google Sheets connection
+   - Configure AI service credentials
+
+4. **Test**
+   - Add a test product to your sheet
+   - Monitor the flow execution
+   - Verify listings appear in columns D, E, F
+
+## 📝 Google Sheet Schema
+
+| Column | Field | Type | Required |
+|--------|-------|------|----------|
+| A | Product Name | Short Text | ✅ |
+| B | Details | Short Text | ✅ |
+| C | Photo URL | Short Text | ❌ |
+| D | Etsy Draft | Short Text | ❌ |
+| E | Amazon Draft | Short Text | ❌ |
+| F | Shopify Draft | Short Text | ❌ |
+| G | Status | Short Text | ❌ |
+
+### Validation Rules
+- **Product Name**: Minimum 3 characters
+- **Details**: Minimum 15 characters
+- Both fields are required
+
+## 📦 Project Metadata
+
+- **Author**: arasu vicky
+- **Type**: SHARED
+- **Status**: PUBLISHED
+- **Last Updated**: 2026-08-08
+- **Pieces Used**:
+  - `@activepieces/piece-google-sheets` v0.16.4
+  - `@activepieces/piece-ai`
+
+## 🚀 Usage Example
+
+### Input (Google Sheet)
+```
+Product Name: "Solar Phone Charger"
+Details: "Portable, waterproof, 25000mAh capacity, dual USB ports"
+Photo URL: "https://example.com/charger.jpg"
 ```
 
-Run a check:
-```bash
-python monitor.py
+### Output (Generated)
+```
+Status: "Processed"
+Etsy Draft: "Eco-friendly solar phone charger - portable & waterproof..."
+Amazon Draft: "25000mAh Solar Power Bank - Dual USB Fast Charging..."
+Shopify Draft: "Premium Solar Phone Charger | 25000mAh Capacity..."
 ```
 
-Simulate a broken pipeline (dropped column, nulls, low row count):
-```python
-# in generate_data.py __main__ block
-generate_data(break_it=True)
-```
-then re-run `python generate_data.py && python monitor.py`.
+## 🔍 What It Extracts
 
-## Screenshot
+**Keywords** (from product details):
+- Removes stop words (the, and, for, with, etc.)
+- Extracts meaningful terms (3+ characters)
+- Removes numbers and special characters
+- Creates searchable keyword set
 
-_(add a screenshot or GIF of the dashboard here once Milestone 1 is done)_
+**Features** (from comma-separated details):
+- Splits details by commas
+- Each feature becomes searchable metadata
 
-## Project structure
+## 🎓 Learning Resources
 
-```
-data-watchdog/
-├── generate_data.py   # creates sample/fake order data
-├── monitor.py         # runs checks, stores snapshot history
-├── alerts.py          # formats and sends alerts
-├── lineage.py         # maps data sources to downstream systems
-├── dashboard.html     # visual dashboard
-├── data/              # generated data (gitignored)
-└── requirements.txt
-```
+- [ActivePieces Documentation](https://docs.activepieces.com)
+- [Google Sheets Integration](https://docs.activepieces.com/pieces/apps/google-sheets)
+- [Code Pieces Guide](https://docs.activepieces.com/pieces/pieces-type/code)
 
-## Roadmap
+## 📄 License
 
-- [ ] Wire dashboard to live backend (Flask API reading from real snapshot history)
-- [ ] Move hardcoded settings into a config file
-- [ ] Support additional data sources (databases, cloud storage)
-- [ ] Smarter statistics (median/MAD instead of mean/std, seasonal baselines)
-- [ ] Distribution drift & duplicate-row checks
-- [ ] Slack/email alerting with severity levels and deduplication
-- [ ] Auto-derived lineage instead of a static map
-- [ ] Docker support, CI, and test coverage
+This workflow is shared under the ActivePieces community. Feel free to fork, modify, and adapt for your use case.
 
-## Contributing
+## 💡 Future Enhancements
 
-This is a learning project I'm actively building in public. Issues and suggestions welcome.
+- [ ] Add inventory tracking
+- [ ] Support for image uploads
+- [ ] A/B testing for different listing variants
+- [ ] Pricing optimization
+- [ ] Customer review integration
+- [ ] Multi-language support
 
-## License
+## 🤝 Contributing
 
-MIT — see [LICENSE](LICENSE).
+Found a bug or have an improvement? Open an issue or submit a PR!
+
+## 📞 Support
+
+For issues or questions:
+- Check [ActivePieces Community](https://community.activepieces.com)
+- Review error logs in your flow execution
+- Verify Google Sheets credentials
+
+---
+
+**Built with ❤️ using ActivePieces**
